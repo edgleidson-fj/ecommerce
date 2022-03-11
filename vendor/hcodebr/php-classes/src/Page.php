@@ -11,13 +11,13 @@ class Page{
 	private $defaults = [ 'dados'=>[] ];
 
 	//Método mágico para ser executado no início.
-	public function __construct($opts = array()){
+	public function __construct($opts = array(), $tpl_dir = "/views/"){
 
 		//Mesclar os Arrays.
 		$this->options = array_merge($this->defaults, $opts); // O Array($opts) vai sobre escrever o Array($defaults) na varíavel $options. 
 
 		$config = array(
-			"tpl_dir"       => $_SERVER['DOCUMENT_ROOT'] . "/views/",
+			"tpl_dir"       => $_SERVER['DOCUMENT_ROOT'] . $tpl_dir,
 			"cache_dir"     => $_SERVER['DOCUMENT_ROOT'] . "/views-cache/",
 			"debug"         => false
 		);
