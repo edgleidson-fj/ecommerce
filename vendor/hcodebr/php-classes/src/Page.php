@@ -8,7 +8,10 @@ class Page{
 
 	private $tpl;
 	private $options =[];
-	private $defaults = [ 'dados'=>[] ];
+	private $defaults = [
+	 'header'=>true,
+	 'footer'=>true,
+	 'dados'=>[] ];
 
 	//Método mágico para ser executado no início.
 	public function __construct($opts = array(), $tpl_dir = "/views/"){
@@ -28,7 +31,8 @@ class Page{
 
 		$this->setDados($this->options['dados']);
 
-		$this->tpl->draw("header"); //Desenhar o template na parte do Cabeçalho.
+		//if em uma linha.
+		if($this->options['header'] === true) $this->tpl->draw("header"); //Se header igual(true) desenhar o template na parte do Cabeçalho.
 
 	}//Fim do Construct.
 
@@ -52,7 +56,7 @@ class Page{
 
 	//Método mágico para ser executado no final.
 	public function __destruct(){
-		$this->tpl->draw("footer"); //Desenhar o template na parte do Rodapé.
+		if($this->options['footer'] === true) $this->tpl->draw("footer"); //Se footer igual(true) desenhar o template na parte do Rodapé.
 	}//Fim do Destruct.
 }
 
