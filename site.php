@@ -9,10 +9,15 @@ use \Hcode\Model\User;
 
 //Rota inicial -> http://www.hcodecommerce.com.br:81/     (get)
 $app->get('/', function() {
+
+	$products = Product::listAll();
     
 	$page = new Page(); //Ao chamar o new Page() ele vai acionar o __construct() com header.html que tem o cabeçalho do template.
 
-	$page->setTpl("index"); //Adicionar o arquivo index.html que tem o corpo do template.
+	//Adicionar o arquivo index.html que tem o corpo do template.
+	$page->setTpl("index", [
+		"products"=>Product::checkList($products) //Acessando o checkList() para verificar todos valores dos produtos incluindo as imagens. 
+	]); 
 
 	//Quanto terminar a execução vai ser acionado o __destruct() com o footer.html que tem a tag para fechar o html finalizando o template.
 });//Fim Rota.
