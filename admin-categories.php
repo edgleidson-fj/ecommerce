@@ -99,4 +99,61 @@ $app->post("/admin/categories/:idcategory", function($idcategory){
 	exit;
 });//Fim Rota POST.
 
+
+//Rota com parâmetro -> http://www.hcodecommerce.com.br:81/admin/categories   (get)
+$app->get("/admin/categories/:idcategory/products", function($idcategory){
+
+	User::verifyLogin();
+
+	$category = new Category();
+
+	$category->get((int)$idcategory);
+
+	$page = new PageAdmin();
+
+	$page->setTpl("categories-products", [
+		'category'=>$category->getValues(),
+		'productsRelated'=>$category->getProducts(),
+		'productsNotRelated'=>$category->getProducts(false)
+	]);
+});//Fim Rota.
+
+
+//Tabela PRODUTO-CATEGORIA
+
+//Rota com parâmetro -> http://www.hcodecommerce.com.br:81/admin/categories/1/products   "INSERT" (get)
+$app->get("/admin/categories/:idcategory/products/:idproduct/add", function($idcategory, $idproduct){
+
+	User::verifyLogin();
+
+	$category = new Category();
+	$category->get((int)$idcategory);
+
+	$product = new Product();
+	$product->get((int)$idproduct);
+
+	$category->addProduct($product);
+
+	header("Location: /admin/categories/". $idcategory ."/products");
+	exit;
+});//Fim Rota.
+
+
+//Rota com parâmetro -> http://www.hcodecommerce.com.br:81/admin/categories/1/products   "DELETE" (get)
+$app->get("/admin/categories/:idcategory/products/:idproduct/remove", function($idcategory, $idproduct){
+
+	User::verifyLogin();
+
+	$category = new Category();
+	$category->get((int)$idcategory);
+
+	$product = new Product();
+	$product->get((int)$idproduct);
+
+	$category->removeProduct($product);
+
+	header("Location: /admin/categories/". $idcategory ."/products");
+	exit;
+});//Fim Rota.
+
 ?>
