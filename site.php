@@ -54,4 +54,19 @@ $app->get("/categories/:idcategory", function($idcategory){
 });//Fim Rota.
 
 
+//Rota com parâmetro -> http://www.hcodecommerce.com.br:81/products/    (get)
+$app->get("/products/:desurl", function($desurl){
+
+	$product = new Product();
+
+	$product->getFromUrl($desurl);
+
+	$page = new Page();
+
+	$page->setTpl("product-detail", [
+		"product"=>$product->getValues(),
+		"categories"=>$product->getCategories()
+	]);
+});//Fim Rota.
+
 ?>
