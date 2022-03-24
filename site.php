@@ -26,16 +26,31 @@ $app->get('/', function() {
 //Rota com parâmetro -> http://www.hcodecommerce.com.br:81/categories/    (get)
 $app->get("/categories/:idcategory", function($idcategory){
 
+	//Saber qual é a página que está no momento.
+	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;//Se foi definido a página no GET no URL pega o número, se não, pega a página 1.
+
 	$category =  new Category();
 
 	$category->get((int)$idcategory);
+
+	$pagination = $category->getProductsPage($page);
+
+	$pages = [];
+
+	for ($i=1; $i <= $pagination['pages']; $i++) { 
+    array_push($pages, [
+    'link'=>'/categories/'.$category->getidcategory().'?page='.$i,  //Ex: -> /categories/1?page=1
+    'page'=>$i
+    ]);
+    }
 
 	$page = new Page();
 
 	$page->setTpl("category", [
 		"category"=>$category->getValues(),
-		"products"=>Product::checkList($category->getProducts())
-	]);
+		"products"=>$pagination['data'],
+		"pages"=>$pages
+	]);	
 });//Fim Rota.
 
 
