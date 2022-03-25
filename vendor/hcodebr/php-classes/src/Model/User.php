@@ -21,7 +21,7 @@ class User extends Model{
 		$user = new User();
 
 		//Verificar se a Sessão existe, e se o iduser é maior que 0.
-		if(isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0){
+		if(isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser']>0){
 
 			$user->setDados($_SESSION[User::SESSION]);
 		}
@@ -91,7 +91,7 @@ class User extends Model{
 
 
 	public static function verifyLogin($inadmin = true){		 
-		if(User::checkLogin($inadmin))
+		if(!User::checkLogin($inadmin))
 		{  
 			header("Location: /admin/login"); //Encaminhar para tela de login.
 			exit();
