@@ -16,8 +16,50 @@ class User extends Model{
 	const ERROR_REGISTER = "UserErrorRegister";
 	const SUCCESS = "UserSucesss";
 
-	public static function login($login, $password): User{
 
+	public static function getFromSession(){
+		$user = new User();
+
+		//Verificar se a Sessão existe, e se o iduser é maior que 0.
+		if(isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0){
+
+			$user->setDados($_SESSION[User::SESSION]);
+		}
+
+		return $user;
+	}//Fim static getFromSession().
+
+
+	public function checkLogin($inadmin = true){
+		if(
+		!isset($_SESSION[User::SESSION])                         //Se a sessão não foi definida.
+		|| 
+		!$_SESSION[User::SESSION]                                //OU se a sessão não for verdadeira. 
+		|| 
+		!(int)$_SESSION[User::SESSION]['iduser'] > 0             //OU se o (iduser) não for maior que 0.
+		|| 
+		(bool)$_SESSION[User::SESSION]["iduser"] !== $inadmin    //OU se (inadmin) não for verdadeiro.
+		)
+		{ 
+			//User não está logado
+			return false;
+		 }
+		 else{
+		 	//Se user tem permissão de Admin, e se está tentando acessar uma rota de administrador.
+		 	if($inadmin === true && (bool)$_SESSION[User::SESSION]["inadmin"] === true){
+		 		return true;
+		 	}
+		 	else if($inadmin === false){ //Se user não é Admin, e está acessando o carrinho de compra dele.
+		 		return true;
+		 	}
+		 	else{
+		 		return false;
+		 	}
+		 }
+	}//Fim checkLogin().
+
+
+	public static function login($login, $password): User{
 		$sql = new Sql();
 
 		$results = $sql->select("SELECT * FROM tb_users WHERE deslogin = :LOGIN", array(
@@ -49,15 +91,7 @@ class User extends Model{
 
 
 	public static function verifyLogin($inadmin = true){		 
-		if(
-		!isset($_SESSION[User::SESSION])                         //Se a sessão não foi definida.
-		|| 
-		!$_SESSION[User::SESSION]                                //OU se a sessão não for verdadeira. 
-		|| 
-		!(int)$_SESSION[User::SESSION]['iduser'] > 0             //OU se o (iduser) não for maior que 0.
-		|| 
-		(bool)$_SESSION[User::SESSION]["iduser"] !== $inadmin    //OU se (inadmin) não for verdadeiro.
-		)
+		if(User::checkLogin($inadmin))
 		{  
 			header("Location: /admin/login"); //Encaminhar para tela de login.
 			exit();
