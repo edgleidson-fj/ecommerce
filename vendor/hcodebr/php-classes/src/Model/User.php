@@ -1,12 +1,13 @@
-<?php
+<?php 
 
 namespace Hcode\Model;
 
-use \Hcode\DB\Sql; //Usando o namespace Sql.
-use \Hcode\Model;  //Usando o namespace Model.
-use \Hcode\Mailer; //Usando o namespace Mailer.
+//Usando o namespace
+use \Hcode\DB\Sql;
+use \Hcode\Model;
+use \Hcode\Mailer;
 
-class User extends Model{
+class User extends Model {
 
 	//Constante.
 	const SESSION = "User";
@@ -21,80 +22,84 @@ class User extends Model{
 		$user = new User();
 
 		//Verificar se a Sessão existe, e se o iduser é maior que 0.
-		if(isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser']>0){
+		if (isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0){
 
-			$user->setDados($_SESSION[User::SESSION]);
+			$user->setData($_SESSION[User::SESSION]);
 		}
 
 		return $user;
 	}//Fim static getFromSession().
 
 
-	public function checkLogin($inadmin = true){
-		if(
-		!isset($_SESSION[User::SESSION])                         //Se a sessão não foi definida.
-		|| 
-		!$_SESSION[User::SESSION]                                //OU se a sessão não for verdadeira. 
-		|| 
-		!(int)$_SESSION[User::SESSION]['iduser'] > 0             //OU se o (iduser) não for maior que 0.
-		|| 
-		(bool)$_SESSION[User::SESSION]["iduser"] !== $inadmin    //OU se (inadmin) não for verdadeiro.
-		)
-		{ 
-			//User não está logado
+	public static function checkLogin($inadmin = true){
+		if (
+			!isset($_SESSION[User::SESSION])				 //Se a sessão não foi definida.
+			||
+			!$_SESSION[User::SESSION]						//OU se a sessão não for verdadeira. 
+			||
+			!(int)$_SESSION[User::SESSION]["iduser"] > 0 	//OU se o (iduser) não for maior que 0.
+		) {
+			//Não está logado
 			return false;
-		 }
-		 else{
-		 	//Se user tem permissão de Admin, e se está tentando acessar uma rota de administrador.
-		 	if($inadmin === true && (bool)$_SESSION[User::SESSION]["inadmin"] === true){
-		 		return true;
-		 	}
-		 	else if($inadmin === false){ //Se user não é Admin, e está acessando o carrinho de compra dele.
-		 		return true;
-		 	}
-		 	else{
-		 		return false;
-		 	}
-		 }
+		} 
+		else {//Se user tem permissão de Admin, e se está tentando acessar uma rota de administrador.
+			if ($inadmin === true && (bool)$_SESSION[User::SESSION]['inadmin'] === true) {
+				return true;
+			} 
+			else if ($inadmin === false) { //Se user não é Admin, e está acessando o carrinho de compra dele.
+				return true;
+			} 
+			else {
+				return false;
+			}
+		}
 	}//Fim checkLogin().
 
 
-	public static function login($login, $password): User{
+	public static function login($login, $password)	{
 		$sql = new Sql();
 
-		$results = $sql->select("SELECT * FROM tb_users WHERE deslogin = :LOGIN", array(
+		$results = $sql->select("
+			SELECT * FROM tb_users a INNER JOIN tb_persons b ON a.idperson = b.idperson WHERE a.deslogin = :LOGIN", array(
 			":LOGIN"=>$login
-		));
+		)); 
 
 		//-Validando Login.
-		if(count($results) === 0){
-			throw new \Exception("Login ou senha inválidos!", 1); //Necessário utilizar a "\" antes de Exception, por causa do diretório.
+		if (count($results) === 0){
+			throw new \Exception("Usuário inexistente ou senha inválida.");
+			//Necessário utilizar a "\" antes de Exception, por causa do diretório.
 		}
 
-		$dados = $results[0]; //posição 0 ou seja primeira posição.
+		$data = $results[0]; //posição 0 ou seja primeira posição.
 
 		//-Validando Senha.
 		//password_verify -> Função do PHP para verificar senha.
-		if(password_verify($password, $dados['despassword']) === true){
-
+		if (password_verify($password, $data["despassword"]) === true){
 			$user = new User();
-			$user->setDados($dados);
+
+			$data['desperson'] = utf8_encode($data['desperson']);
+
+			$user->setData($data);
 
 			$_SESSION[User::SESSION] = $user->getValues();
 
 			return $user;
+		} 
+		else {
+			throw new \Exception("Usuário inexistente ou senha inválida.");			
 		}
-		else{
-			throw new \Exception("Login ou senha inválidos!", 1);
-		}
-	}//Fim login().
+	}//Fim static login().
 
 
-	public static function verifyLogin($inadmin = true){		 
-		if(!User::checkLogin($inadmin))
-		{  
-			header("Location: /admin/login"); //Encaminhar para tela de login.
-			exit();
+	public static function verifyLogin($inadmin = true){
+
+		if (!User::checkLogin($inadmin)) {
+			if ($inadmin) {
+				header("Location: /admin/login");
+			} else {
+				header("Location: /login");
+			}
+			exit;
 		}
 	}//Fim verifyLogin().
 
@@ -114,11 +119,10 @@ class User extends Model{
 	public function save(){
 		$sql = new Sql();
 
-		//Procedure.
 		$results = $sql->select("CALL sp_users_save(:desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
 			":desperson"=>utf8_decode($this->getdesperson()),
 			":deslogin"=>$this->getdeslogin(),
-			":despassword"=>$this->getdespassword(),
+			":despassword"=>User::getPasswordHash($this->getdespassword()),
 			":desemail"=>$this->getdesemail(),
 			":nrphone"=>$this->getnrphone(),
 			":inadmin"=>$this->getinadmin()
@@ -135,21 +139,22 @@ class User extends Model{
 			":iduser"=>$iduser
 		));
 
-		$dados = $results[0];
+		$data = $results[0];
 
-		$this->setDados($dados);
+		$data['desperson'] = utf8_encode($data['desperson']);
+
+		$this->setData($data);
 	}//Fim get().
 
 
 	public function update(){
 		$sql = new Sql();
 
-		//Procedure.
 		$results = $sql->select("CALL sp_usersupdate_save(:iduser, :desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
 			":iduser"=>$this->getiduser(),
 			":desperson"=>utf8_decode($this->getdesperson()),
 			":deslogin"=>$this->getdeslogin(),
-			":despassword"=>$this->getdespassword(),
+			":despassword"=>User::getPasswordHash($this->getdespassword()),
 			":desemail"=>$this->getdesemail(),
 			":nrphone"=>$this->getnrphone(),
 			":inadmin"=>$this->getinadmin()
@@ -166,10 +171,9 @@ class User extends Model{
 			":iduser"=>$this->getiduser()
 		));
 	}//Fim delete().
-	
 
-	public static function getForgot($email, $inadmin = true)
-	{
+
+	public static function getForgot($email, $inadmin = true){
 		$sql = new Sql();
 
 		$results = $sql->select("
@@ -181,15 +185,10 @@ class User extends Model{
 			":email"=>$email
 		));
 
-		if (count($results) === 0)
-		{
-
+		if (count($results) === 0){
 			throw new \Exception("Não foi possível recuperar a senha.");
-
 		}
-		else
-		{
-
+		else{
 			$data = $results[0];
 
 			$results2 = $sql->select("CALL sp_userspasswordsrecoveries_create(:iduser, :desip)", array(
@@ -197,15 +196,10 @@ class User extends Model{
 				":desip"=>$_SERVER['REMOTE_ADDR']
 			));
 
-			if (count($results2) === 0)
-			{
-
+			if (count($results2) === 0){
 				throw new \Exception("Não foi possível recuperar a senha.");
-
 			}
-			else
-			{
-
+			else{
 				$dataRecovery = $results2[0];
 
 				$code = openssl_encrypt($dataRecovery['idrecovery'], 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV));
@@ -213,13 +207,10 @@ class User extends Model{
 				$code = base64_encode($code);
 
 				if ($inadmin === true) {
-
-					$link = "http://www.hcodecommerce.com.br:81/admin/forgot/reset?code=$code";
-
-				} else {
-
-					$link = "http://www.hcodecommerce.com.br:81/forgot/reset?code=$code";
-					
+					$link = "http://www.hcodecommerce.com.br/admin/forgot/reset?code=$code";
+				} 
+				else {
+					$link = "http://www.hcodecommerce.com.br/forgot/reset?code=$code";					
 				}				
 
 				$mailer = new Mailer($data['desemail'], $data['desperson'], "Redefinir senha da Hcode Store", "forgot", array(
@@ -230,18 +221,12 @@ class User extends Model{
 				$mailer->send();
 
 				return $link;
-
 			}
-
 		}
-
 	}//Fim forgot().
 
 
-
-	public static function validForgotDecrypt($code)
-	{
-
+	public static function validForgotDecrypt($code){
 		$code = base64_decode($code);
 
 		$idrecovery = openssl_decrypt($code, 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV));
@@ -263,50 +248,39 @@ class User extends Model{
 			":idrecovery"=>$idrecovery
 		));
 
-		if (count($results) === 0)
-		{
+		if (count($results) === 0){
 			throw new \Exception("Não foi possível recuperar a senha.");
 		}
-		else
-		{
-
+		else{
 			return $results[0];
-
 		}
-
 	}//Fim validForgotDecrypt().
 
-
-	public static function setForgotUsed($idrecovery)
-	{
+	
+	public static function setFogotUsed($idrecovery){
 		$sql = new Sql();
 
 		$sql->query("UPDATE tb_userspasswordsrecoveries SET dtrecovery = NOW() WHERE idrecovery = :idrecovery", array(
 			":idrecovery"=>$idrecovery
 		));
-
 	}//Fim setForgotUsed().
 
 
 	public function setPassword($password){
-
 		$sql = new Sql();
 
-		$sql->query("UPDATE FROM tb_userspasswordsrecoveries SET despassword = :password WHERE iduser = :iduser", array(
+		$sql->query("UPDATE tb_users SET despassword = :password WHERE iduser = :iduser", array(
 			":password"=>$password,
-			"iduser"=>$this->getiduser()
+			":iduser"=>$this->getiduser()
 		));
 	}//Fim setPassword().
+	
 
-
-	public static function getPasswordHash($password)
-	{
+	public static function getPasswordHash($password){
 		return password_hash($password, PASSWORD_DEFAULT, [
 			'cost'=>12
 		]);
-
 	}//Fim getPasswordHash().
 
-
 }
-?>
+ ?>

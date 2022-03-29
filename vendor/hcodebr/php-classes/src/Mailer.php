@@ -2,9 +2,7 @@
 
 namespace Hcode;
  
- 
- 
- 
+//Usando namespace. 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
@@ -20,41 +18,30 @@ class Mailer{
  	//Contantes.
     const USERNAME = 'meu@gmail.com';
 	const PASSWORD = 'minhaSenha';
-	const NAME_FROM = 'Curso PHP 7';
- 
- 
- 
+	const NAME_FROM = 'Curso PHP 7'; 
  
     private $mail;
+
  
- 
-    public function __construct($toAddress, $toName, $subject, $tplName, $data = array())
-    {
+    public function __construct($toAddress, $toName, $subject, $tplName, $data = array())  {
  
         $config = array(
  
             "tpl_dir"    => $_SERVER["DOCUMENT_ROOT"]."/views/email/",
             "cache_dir"  => $_SERVER["DOCUMENT_ROOT"]."/views-cache/",
-            "debug"      => false
- 
-        );
- 
+            "debug"      => false 
+        ); 
             Tpl::configure( $config );
  
-            $tpl = new Tpl;
+            $tpl = new Tpl; 
  
- 
-            foreach($data as $key => $value) {
- 
-                $tpl->assign($key, $value);
- 
+            foreach($data as $key => $value) { 
+                $tpl->assign($key, $value); 
             }
  
             $html = $tpl->draw($tplName, true);
  //----------------------------------------------------------------------------------
- 
- 
- 
+  
 	$this->mail = new \PHPMailer; //->Funcionando.
 	//$this->mail = new PHPMailer(true); //->Apresentando Erro
 	 
@@ -65,14 +52,12 @@ class Mailer{
 	// SMTP::DEBUG_OFF = off (for production use)
 	// SMTP::DEBUG_CLIENT = client messages
 	// SMTP::DEBUG_SERVER = client and server messages
-	$this->mail->SMTPDebug = false;
-	 
+	$this->mail->SMTPDebug = false;	 
 	 
 	$this->mail->Debugoutput =  'html';
 	 
 	//Set the hostname of the mail server
-	$this->mail->Host = 'smtp.gmail.com';
-	 
+	$this->mail->Host = 'smtp.gmail.com';	 
 	 
 	// use
 	 //$this->mail->Host = gethostbyname('smtp.gmail.com');
@@ -88,8 +73,7 @@ class Mailer{
 	                'verify_peer_name' => false,
 	                'allow_self_signed' => true
 	                )
-	            );
-	 
+	            );	 
 	 
 	$this->SMTPSecure = 'tls';
 	 
@@ -134,18 +118,12 @@ class Mailer{
 	// } else {
 	//     echo 'Message sent!';
 	  
-	}//fim __construct().
- 
+	}//fim __construct(). 
  
  
 public function send(){
-
     return $this->mail->send(); //->Enviar.
-
-}//Fim send().
- 
+}//Fim send(). 
  
 }
-
-
 ?>

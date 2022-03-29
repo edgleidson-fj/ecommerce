@@ -1,11 +1,13 @@
-<?php
+<?php 
 
 namespace Hcode\Model;
 
-use \Hcode\DB\Sql; //Usando o namespace Sql.
-use \Hcode\Model;  //Usando o namespace Model.
+//Usando o namespace.
+use \Hcode\DB\Sql;
+use \Hcode\Model;
+use \Hcode\Mailer;
 
-class Product extends Model{
+class Product extends Model {
 
 	public static function listAll(){
 		$sql = new Sql();
@@ -15,10 +17,12 @@ class Product extends Model{
 
 
 	public static function checkList($list){
+
 		foreach ($list as &$row) {
+			
 			$p = new Product();
-			$p->setDados($row);
-			$row = $p->getValues();	//Verificar e pega todos os valores dos produtos incluindo as imagens.	
+			$p->setData($row);
+			$row = $p->getValues(); //Verificar e pega todos os valores dos produtos incluindo as imagens.
 		}
 
 		return $list;
@@ -39,7 +43,7 @@ class Product extends Model{
 			":desurl"=>$this->getdesurl()
 		));
 
-		$this->setDados($results[0]);
+		$this->setData($results[0]);
 	}//Fim save().
 
 
@@ -50,15 +54,15 @@ class Product extends Model{
 			':idproduct'=>$idproduct
 		]);
 
-		$this->setDados($results[0]);
+		$this->setData($results[0]);
 	}//Fim get().
-	
+
 
 	public function delete(){
 		$sql = new Sql();
 
 		$sql->query("DELETE FROM tb_products WHERE idproduct = :idproduct", [
-			"idproduct"=>$this->getidproduct()
+			':idproduct'=>$this->getidproduct()
 		]);
 	}//Fim delete().
 
@@ -77,8 +81,8 @@ class Product extends Model{
 			)) {
 
 			$url = "/res/site/img/products/" . $this->getidproduct() . ".jpg";
-
-		} else {
+		} 
+		else {
 			$url = "/res/site/img/products/sem-foto.jpg";
 		}
 
@@ -86,7 +90,6 @@ class Product extends Model{
 	}//Fim checkPhoto().
 
 
-	//Sobreecrevendo o método da classe pai.
 	public function getValues(){
 		$this->checkPhoto();
 
@@ -94,7 +97,6 @@ class Product extends Model{
 
 		return $values;
 	}//Fim getValues().
-
 
 
 	public function setPhoto($file){
@@ -135,10 +137,10 @@ class Product extends Model{
 		$sql = new Sql();
 
 		$rows = $sql->select("SELECT * FROM tb_products WHERE desurl = :desurl LIMIT 1", [
-			":desurl"=>$desurl
+			':desurl'=>$desurl
 		]);
 
-		$this->setDados($rows[0]);
+		$this->setData($rows[0]);
 	}//Fim getFromURL().
 
 
@@ -152,6 +154,6 @@ class Product extends Model{
 			':idproduct'=>$this->getidproduct()
 		]);
 	}//Fim getCategories().
-	
+
 }
-?>
+ ?>
