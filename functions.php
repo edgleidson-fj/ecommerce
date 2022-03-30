@@ -10,7 +10,7 @@ function formatPrice(float $vlprice){
 }
 
 
-//Verificar o tipo do user.
+//Verificar o tipo do user (0/False-> Normal, 1/True-> Adm).
 function checkLogin($inadmin = true){
 	return User::checkLogin($inadmin);
 }

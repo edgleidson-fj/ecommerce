@@ -302,6 +302,11 @@ class User extends Model {
 	}//clearError().
 
 
+	public static function setErrorRegister($msg){
+		$_SESSION[User::ERROR_REGISTER] = $msg;
+	}//Fim setErrorRegister().
+
+
 	public static function getErrorRegister(){
 		$msg = (isset($_SESSION[User::ERROR_REGISTER]) && $_SESSION[User::ERROR_REGISTER]) ? $_SESSION[User::ERROR_REGISTER] : '';
 
@@ -314,6 +319,17 @@ class User extends Model {
 	public static function clearErrorRegister(){
 		$_SESSION[User::ERROR_REGISTER] = NULL;
 	}//clearErrorRegister().
+
+
+	public static function checkLoginExist($login){
+		$sql = new Sql();
+
+		$results = $sql->select("SELECT * FROM tb_users WHERE deslogin = :deslogin", [
+			':deslogin'=>$login
+		]);
+
+		return (count($results) > 0); //Se retornar True porque já existe o login/email no banco, se False, porque ainda não existe.
+	}//Fim checkLoginExist().
 
 }
  ?>
