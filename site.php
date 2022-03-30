@@ -211,7 +211,7 @@ $app->get("/logout", function(){
 
 
 //Cadastrar usuário.
-//Rota -> (post)
+//Rota -> http://www.hcodecommerce.com.br:81/login   (post)
 $app->post("/register", function(){
 	
 	$_SESSION['registerValues'] = $_POST;
@@ -262,4 +262,68 @@ $app->post("/register", function(){
 	header("Location: /checkout");
 	exit;
 });//Fim Rota POST.
+
+
+//Esqueci a Senha.
+//Rota -> http://www.hcodecommerce.com.br:81/forgot      "Esqueci a Senha"  (get)
+$app->get("/forgot", function() {
+
+	$page = new Page();
+
+	$page->setTpl("forgot");	
+});//Fim Rota.
+
+
+//Rota -> http://www.hcodecommerce.com.br:81/forgot       "Esqueci a Senha"  (post)
+$app->post("/forgot", function(){
+
+	$user = User::getForgot($_POST["email"], false);  //False -> User Normal,  True -> User Adm.
+
+	header("Location: /forgot/sent");
+	exit;
+});//Fim Rota POST.
+
+
+//Rota -> http://www.hcodecommerce.com.br:81/forgot/sent      "Esqueci a Senha - Envio de Email" (get)
+$app->get("/forgot/sent", function(){
+
+	$page = new Page();
+
+	$page->setTpl("forgot-sent");
+});//Fim Rota.
+
+
+//Rota -> http://www.hcodecommerce.com.br:81/forgot/reset      "Esqueci a Senha - Alterar Senha" (get)
+$app->get("/forgot/reset", function(){
+
+	$user = User::validForgotDecrypt($_GET['code']);
+
+	$page = new Page();
+
+	$page->setTpl("forgot-reset", array(
+		"name"=>$user['desperson'],
+		"code"=>$_GET['code']
+	));
+}); //Fim Rota.
+
+
+//Rota -> http://www.hcodecommerce.com.br:81/forgot/reset      "Esqueci a Senha - Alterar Senha" (post)
+$app->post("/forgot/reset", function(){
+
+	$forgot = User::validForgotDecrypt($_POST["code"]);	
+
+	User::setForgotUsed($forgot["idrecovery"]);
+
+	$user = new User();
+
+	$user->get((int)$forgot["iduser"]);
+
+	$password = User::getPasswordHash($_POST["password"]);
+
+	$user->setPassword($password);
+
+	$page = new Page();
+
+	$page->setTpl("forgot-reset-success");
+}); //Fim Rota
 ?>
