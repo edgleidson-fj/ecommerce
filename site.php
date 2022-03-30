@@ -1,10 +1,12 @@
 <?php 
 
+//Usando namespace.
 use \Hcode\Page;
 use \Hcode\Model\Product;
 use \Hcode\Model\Category;
 use \Hcode\Model\Cart;
 use \Hcode\Model\User;
+use \Hcode\Model\Address;
 
 
 //Rota inicial -> http://www.hcodecommerce.com.br:81/     (get)
@@ -69,7 +71,7 @@ $app->get("/products/:desurl", function($desurl){
 	]);
 });//Fim Rota.
 
-
+//Carrinho
 //Rota -> http://www.hcodecommerce.com.br:81/cart   (get)
 $app->get("/cart", function(){
 
@@ -149,4 +151,59 @@ $app->post("/cart/freight", function(){
 	exit;
 });//Fim Rota POST.
 
- ?>
+
+//Finalizar Pedido.
+//Rota -> http://www.hcodecommerce.com.br:81/checkout (get)
+$app->get("/checkout", function(){
+
+	User::verifyLogin(false); //False para indicar que não é Admin.
+
+	$cart = Cart::getFromSession();
+
+	$address = new Address();
+
+	$page = new Page();
+
+	$page->setTpl("checkout", [
+		"cart"=>$cart->getValues(),
+		"address"=>$address->getValues()
+	]);
+});//Fim Rota.
+
+//Login
+//Rota -> http://www.hcodecommerce.com.br:81/login    (get)
+$app->get("/login", function(){
+
+	$page = new Page();
+
+	$page->setTpl("login", [
+		"error"=>User::getError()
+	]);
+});//Fim Rota.
+
+
+//Rota -> http://www.hcodecommerce.com.br:81/login (post)
+$app->post("/login", function(){
+
+	try {
+		User::login($_POST['login'], $_POST['password']);	
+	} 
+	catch(Exception $e){
+		User::setError($e->getMessage());
+	}
+
+	header("Location: /checkout");
+	exit;
+});//Fim Rota POST.
+
+
+//Rota -> (get)
+$app->get("/logout", function(){
+
+	User::logout();
+
+	header("Location: /login");
+	exit;
+});//Fim Rota.
+
+?>

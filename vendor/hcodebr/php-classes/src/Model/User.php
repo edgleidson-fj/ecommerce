@@ -282,5 +282,38 @@ class User extends Model {
 		]);
 	}//Fim getPasswordHash().
 
+
+	public static function setError($msg){
+		$_SESSION[User::ERROR] = $msg;
+	}//setError().
+
+
+	public static function getError(){
+		$msg = (isset($_SESSION[User::ERROR]) && $_SESSION[User::ERROR]) ? $_SESSION[User::ERROR] : '';
+
+		User::clearError();
+
+		return $msg;
+	}//getError().
+
+
+	public static function clearError(){
+		$_SESSION[User::ERROR] = NULL;
+	}//clearError().
+
+
+	public static function getErrorRegister(){
+		$msg = (isset($_SESSION[User::ERROR_REGISTER]) && $_SESSION[User::ERROR_REGISTER]) ? $_SESSION[User::ERROR_REGISTER] : '';
+
+		User::clearErrorRegister();
+
+		return $msg;
+	}//getErrorRegister().
+
+
+	public static function clearErrorRegister(){
+		$_SESSION[User::ERROR_REGISTER] = NULL;
+	}//clearErrorRegister().
+
 }
  ?>
