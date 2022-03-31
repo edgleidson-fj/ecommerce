@@ -154,7 +154,8 @@ class User extends Model {
 			":iduser"=>$this->getiduser(),
 			":desperson"=>utf8_decode($this->getdesperson()),
 			":deslogin"=>$this->getdeslogin(),
-			":despassword"=>User::getPasswordHash($this->getdespassword()),
+			//":despassword"=>User::getPasswordHash($this->getdespassword()), //Apresentando erro.
+			":despassword"=>$this->getdespassword(), //Solução provisória
 			":desemail"=>$this->getdesemail(),
 			":nrphone"=>$this->getnrphone(),
 			":inadmin"=>$this->getinadmin()
@@ -330,6 +331,25 @@ class User extends Model {
 
 		return (count($results) > 0); //Se retornar True porque já existe o login/email no banco, se False, porque ainda não existe.
 	}//Fim checkLoginExist().
+
+
+	public static function setSuccess($msg){
+		$_SESSION[User::SUCCESS] = $msg;
+	}//Fim setSuccess().
+
+
+	public static function getSuccess(){
+		$msg = (isset($_SESSION[User::SUCCESS]) && $_SESSION[User::SUCCESS]) ? $_SESSION[User::SUCCESS] : '';
+
+		User::clearSuccess();
+
+		return $msg;
+	}//Fim getSuccess().
+	
+
+	public static function clearSuccess(){
+		$_SESSION[User::SUCCESS] = NULL;
+	}//Fim clearSuccess().
 
 }
  ?>
