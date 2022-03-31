@@ -15,6 +15,13 @@ class Cart extends Model {
 	const SESSION_ERROR = "CartError";
 
 
+	//Limpar sessão para zerar o carrinho.
+	public function removeSession(){
+		$_SESSION[Cart::SESSION] = Null;
+		session_regenerate_id();
+	}//Fim removeSession().
+
+
 	public static function getFromSession()	{
 		$cart = new Cart();
 
