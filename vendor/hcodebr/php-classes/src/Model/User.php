@@ -155,7 +155,7 @@ class User extends Model {
 			":desperson"=>utf8_decode($this->getdesperson()),
 			":deslogin"=>$this->getdeslogin(),
 			//":despassword"=>User::getPasswordHash($this->getdespassword()), //Apresentando erro.
-			":despassword"=>$this->getdespassword(), //Solução provisória
+			":despassword"=>$this->getdespassword(), //Solução.
 			":desemail"=>$this->getdesemail(),
 			":nrphone"=>$this->getnrphone(),
 			":inadmin"=>$this->getinadmin()
