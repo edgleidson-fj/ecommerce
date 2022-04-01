@@ -2,6 +2,7 @@
 
 //Usando namespace.
 use \Hcode\Model\User;
+use \Hcode\Model\Cart;
 
 
 //Formatar para valor em Real.
@@ -23,5 +24,25 @@ function getUserName(){
 	$user = User::getFromSession();
 	return $user->getdesperson();
 }//Fim getUserName().
+
+
+//Pegar a quantidade de itens no carrinho.
+function getCartNrQtd(){
+	$cart = Cart::getFromSession(); //Pegando o carrinho da sessão.
+
+	$totals = $cart->getProductsTotals();
+
+	return $totals['nrqtd'];
+}//Fim getCartNrQtd().
+
+
+//Pegar o valor dos itens no carrinho.
+function getCartVlSubTotal(){
+	$cart = Cart::getFromSession(); //Pegando o carrinho da sessão.
+
+	$totals = $cart->getProductsTotals();
+
+	return formatPrice($totals['vlprice']);
+}//Fim getCartNrQtd().
 
 ?>
