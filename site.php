@@ -629,4 +629,77 @@ $app->get("/profile/orders/:idorder", function($idorder){
 		"products"=>$cart->getProducts()
 	]);
 });//Fim Rota.
+
+
+//Troca Senha
+//Rota -> (get)
+$app->get("/profile/change-password", function(){
+
+	User::verifyLogin(false);
+
+	$page = new Page();
+
+	$page->setTpl("profile-change-password", [
+		"changePassError"=>User::getError(),
+		"changePassSuccess"=>User::getSuccess()
+	]);
+});//Fim Rota. 
+
+
+//Rota -> (post)
+$app->post("/profile/change-password", function(){
+
+	User::verifyLogin(false);
+
+	//Se a "senha atual" não foi definida OU se a "senha atual" está vazia.
+	if(!isset($_POST['current_pass']) || $_POST['current_pass'] === ''){
+		User::setError("Digite a senha atual.");
+		header("Location: /profile/change-password");
+		exit;
+	}
+	//Se a "senha nova" não foi definida OU se a "senha nova" está vazia.
+	if(!isset($_POST['new_pass']) || $_POST['new_pass'] === ''){
+		User::setError("Digite a nova senha.");
+		header("Location: /profile/change-password");
+		exit;
+	}
+	//Se a "senha nova - confirmação" não foi definida OU se a "senha nova - confirmação" está vazia.
+	if(!isset($_POST['new_pass_confirm']) || $_POST['new_pass_confirm'] === ''){
+		User::setError("Confirme a nova senha.");
+		header("Location: /profile/change-password");
+		exit;
+	}
+	//Se a "senha nova" é igual a "senha atual".
+	if($_POST['current_pass'] === $_POST['new_pass']){
+		User::setError("A sua senha nova de ser diferente da atual.");
+		header("Location: /profile/change-password");
+		exit;
+	}
+
+	$user = User::getFromSession();
+
+	//Se a "senha atual" informada, for diferente do que está no banco.
+	if (!password_verify($_POST['current_pass'], $user->getdespassword())) {
+		User::setError("A senha está inválida.");
+		header("Location: /profile/change-password");
+		exit;			
+	}
+	//Se a "senha nova" informada, for diferente da "senha de confirmação".
+	if($_POST['new_pass'] != $_POST['new_pass_confirm']){
+		User::setError("A senha não confere.");
+		header("Location: /profile/change-password");
+		exit;
+	}
+
+	//$user->despassword($_POST['new_pass']); Apresentando erro.
+	$user->setdespassword(User::getPasswordHash($_POST['new_pass']));  //Solução.
+
+	$user->update();
+
+	$_SESSION[User::SESSION] = $user->getValues();
+
+	User::setSuccess("Senha alterada com sucesso.");
+	header("Location: /profile/change-password");
+	exit;
+});//Fim Rota POST. 
 ?>
