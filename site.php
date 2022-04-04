@@ -632,7 +632,7 @@ $app->get("/profile/orders/:idorder", function($idorder){
 
 
 //Troca Senha
-//Rota -> (get)
+//Rota -> http://www.hcodecommerce.com.br:81/profile/change-password   (get)
 $app->get("/profile/change-password", function(){
 
 	User::verifyLogin(false);
@@ -646,7 +646,7 @@ $app->get("/profile/change-password", function(){
 });//Fim Rota. 
 
 
-//Rota -> (post)
+//Rota -> http://www.hcodecommerce.com.br:81/profile/change-password   (post)
 $app->post("/profile/change-password", function(){
 
 	User::verifyLogin(false);

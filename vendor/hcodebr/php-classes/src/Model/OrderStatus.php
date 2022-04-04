@@ -18,7 +18,7 @@ class OrderStatus extends Model {
 		$sql = new Sql();
 
 		return $sql->select("SELECT * FROM tb_ordersstatus ORDER BY desstatus");
-	}
+	}//Fim listAll().
 
 }
 ?>

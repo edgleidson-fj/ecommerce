@@ -13,6 +13,12 @@ function formatPrice($vlprice){
 }//Fim formatPrice().
 
 
+//Formata data.
+function formatDate($date){
+	return date("d/m/y", strtotime($date));
+}//Fim formatDate().
+
+
 //Verificar o tipo do user (0/False-> Normal, 1/True-> Adm).
 function checkLogin($inadmin = true){
 	return User::checkLogin($inadmin);
