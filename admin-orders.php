@@ -91,10 +91,38 @@ $app->get("/admin/orders", function(){
 
 	User::verifyLogin();
 
+	//Se a "search" foi definida pegue o valor, se não deixe o valor vazio.
+	$search = (isset($_GET['search'])) ? $_GET['search'] : "";
+
+	//Se o "page" foi definido pegue o número da página, se não passe a página-1.
+	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
+
+	if ($search != '') {
+		$pagination = Order::getPageSearch($search, $page);
+	} 
+	else{
+		$pagination = Order::getPage($page);
+	}
+
+	$pages = []; //Array vazio.
+
+	for($x=0; $x < $pagination['pages']; $x++){
+		//Preencher o Array.
+		array_push($pages, [
+			'href'=>'/admin/orders?'.http_build_query([
+				'page'=>$x+1,
+				'search'=>$search
+			]),
+			'text'=>$x+1
+		]);
+	}//Fim for.
+
 	$page = new PageAdmin();
 
 	$page->setTpl("orders", [
-		"orders"=>Order::listAll()
+		"orders"=>$pagination['data'],
+		"search"=>$search,
+		"pages"=>$pages
 	]);
 });//Fim Rota.
 
