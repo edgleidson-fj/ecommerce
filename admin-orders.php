@@ -98,5 +98,4 @@ $app->get("/admin/orders", function(){
 	]);
 });//Fim Rota.
 
-
 ?>
