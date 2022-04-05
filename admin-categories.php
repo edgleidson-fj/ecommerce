@@ -12,12 +12,38 @@ $app->get("/admin/categories", function(){
 
 	User::verifyLogin();
 
-	$categories = Category::listAll();
+	//Se a "search" foi definida pegue o valor, se não deixe o valor vazio.
+	$search = (isset($_GET['search'])) ? $_GET['search'] : "";
+
+	//Se o "page" foi definido pegue o número da página, se não passe a página-1.
+	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
+
+	if ($search != '') {
+		$pagination = Category::getPageSearch($search, $page);
+	} 
+	else{
+		$pagination = Category::getPage($page);
+	}
+
+	$pages = []; //Array vazio.
+
+	for($x=0; $x < $pagination['pages']; $x++){
+		//Preencher o Array.
+		array_push($pages, [
+			'href'=>'/admin/categories?'.http_build_query([
+				'page'=>$x+1,
+				'search'=>$search
+			]),
+			'text'=>$x+1
+		]);
+	}//Fim for.
 
 	$page = new PageAdmin();
 
 	$page->setTpl("categories", [
-		"categories"=>$categories
+		'categories'=>$pagination['data'],
+		'search'=>$search,
+		'pages'=>$pages
 	]);
 });//Fim Rota.
 
@@ -29,7 +55,7 @@ $app->get("/admin/categories/create", function(){
 
 	$page = new PageAdmin();
 
-	$page->setTpl("categories-create");
+	$page->setTpl("categories-create");	
 });//Fim Rota.
 
 
@@ -40,7 +66,7 @@ $app->post("/admin/categories/create", function(){
 
 	$category = new Category();
 
-	$category->setDados($_POST);
+	$category->setData($_POST);
 
 	$category->save();
 
