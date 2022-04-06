@@ -5,6 +5,58 @@ use \Hcode\PageAdmin;
 use \Hcode\Model\User;
 
 
+//Rota com parâmetro -> http://www.hcodecommerce.com.br:81/admin/users/1/password "Alterar Senha"  (get)
+$app->get("/admin/users/:iduser/password", function($iduser){
+
+	User::verifyLogin();
+
+	$user = new User();
+	$user->get((int)$iduser);
+
+	$page = new PageAdmin();
+
+	$page->setTpl("users-password", [
+		"user"=>$user->getValues(),
+		"msgError"=>User::getError(),
+		"msgSuccess"=>User::getSuccess()
+	]);
+});//Fim Rota.
+
+
+//Rota com parâmetro -> http://www.hcodecommerce.com.br:81/admin/users/1/password "Alterar Senha"  (post)
+$app->post("/admin/users/:iduser/password", function($iduser){
+
+	User::verifyLogin();
+
+	//Se a "nova senha" não for definida OU está vazia.
+	if(!isset($_POST['despassword']) || $_POST['despassword'] === ''){
+		User::setError("Preencha a nova senha.");
+		header("Location: /admin/users/$iduser/password");
+		exit;
+	}
+	//Se a "confirmação" não for definida OU está vazia.
+	if(!isset($_POST['despassword-confirm']) || $_POST['despassword-confirm'] === ''){
+		User::setError("Preencha a confirmação da nova senha.");
+		header("Location: /admin/users/$iduser/password");
+		exit;
+	}
+	//Se a "nova senha" estiver diferente da "confirmação".
+	if($_POST['despassword'] !== $_POST['despassword-confirm']){
+		User::setError("Senhas não confere.");
+		header("Location: /admin/users/$iduser/password");
+		exit;
+	}
+
+	$user = new User();
+	$user->get((int)$iduser);
+	$user->setPassword(User::getPasswordHash($_POST['despassword']));
+
+	User::setSuccess("Senha alterada com sucesso.");
+	header("Location: /admin/users/$iduser/password");
+	exit;	
+});//Fim Rota POST.
+
+
 //Rota -> http://www.hcodecommerce.com.br:81/admin/users      (get)
 $app->get('/admin/users', function(){
 
