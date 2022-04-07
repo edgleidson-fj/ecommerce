@@ -270,9 +270,37 @@ $app->post("/checkout", function(){
 
 	$cart->removeSession(); 
 
-	header("Location: /order/".$order->getidorder());
+	header("Location: /order/".$order->getidorder()."/pagseguro");
 	exit;
 });//Fim Rota POST.
+
+
+//Encaminhar para o PagSeguro
+//Rota com parâmetro -> https://pagseguro.uol.com.br/checkout/nc/sender-data-payment-methods.jhtml?....     (get)
+$app->get("/order/:idorder/pagseguro", function($idorder){
+
+	User::verifyLogin(false); //False-> Indicar que não é ADM.
+
+	$order = new Order();
+	$order->get((int)$idorder);
+
+	$cart = $order->getCart(); //Pegando o carrinho do pedido.
+
+	$page = new Page([
+		"header"=>false,
+		"footer"=>false
+	]);
+
+	$page->setTpl("payment-pagseguro", [
+		"order"=>$order->getValues(),
+		"cart"=>$cart->getValues(),
+		"products"=>$cart->getProducts(),
+		"phone"=>[
+			"areaCode"=>substr($order->getnrphone(), 0, 2), //Pegar o DDD.
+			"number"=>substr($order->getnrphone(), 2, strlen($order->getnrphone())) //Pegar o telefone sem o DDD.
+		]
+	]);
+});//Fim Rota.
 
 
 //Login
