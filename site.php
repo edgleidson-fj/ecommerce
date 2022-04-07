@@ -266,17 +266,24 @@ $app->post("/checkout", function(){
 		'vltotal'=>$cart->getvltotal()
 	]);
 
-	$order->save();
+	$order->save();	
 
-	$cart->removeSession(); 
+	switch ((int)$_POST['payment-method']) {
+		case 1:
+		header("Location: /order/".$order->getidorder()."/pagseguro");
+		break;
+		case 2:
+		header("Location: /order/".$order->getidorder()."/paypal");
+		break;
+	}//Fim switch.
 
-	header("Location: /order/".$order->getidorder()."/pagseguro");
+	$cart->removeSession(); //Retirando o carrinho da sessão.
 	exit;
 });//Fim Rota POST.
 
 
 //Encaminhar para o PagSeguro
-//Rota com parâmetro -> https://pagseguro.uol.com.br/checkout/nc/sender-data-payment-methods.jhtml?....     (get)
+//Rota com parâmetro -> https://pagseguro.uol.com.br/checkout/nc/sender-data-payment-methods.jhtml?...     (get)
 $app->get("/order/:idorder/pagseguro", function($idorder){
 
 	User::verifyLogin(false); //False-> Indicar que não é ADM.
@@ -299,6 +306,31 @@ $app->get("/order/:idorder/pagseguro", function($idorder){
 			"areaCode"=>substr($order->getnrphone(), 0, 2), //Pegar o DDD.
 			"number"=>substr($order->getnrphone(), 2, strlen($order->getnrphone())) //Pegar o telefone sem o DDD.
 		]
+	]);
+});//Fim Rota.
+
+
+//Encaminhado para PayPal
+//Rota com parâmetro -> https://www.paypal.com/webapps/hermes?token=...    (get)
+$app->get("/order/:idorder/paypal", function($idorder){
+
+	User::verifyLogin(false);
+
+	$order = new Order();
+
+	$order->get((int)$idorder);
+
+	$cart = $order->getCart();
+
+	$page = new Page([
+		'header'=>false,
+		'footer'=>false
+	]);
+
+	$page->setTpl("payment-paypal", [
+		'order'=>$order->getValues(),
+		'cart'=>$cart->getValues(),
+		'products'=>$cart->getProducts()
 	]);
 });//Fim Rota.
 
